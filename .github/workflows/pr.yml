@@ -1,3 +1,9 @@
+name: PR Review Notification with Diff
+
+on:
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
 jobs:
   notify-api:
     runs-on: ubuntu-latest
