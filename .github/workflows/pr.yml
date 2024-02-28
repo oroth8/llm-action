@@ -26,7 +26,7 @@ jobs:
 
             const headers = {
               'Accept': 'application/vnd.github.v3.diff',
-              'Authorization': `Bearer ${githubToken}`,
+              'Authorization': `Bearer ${GITHUB_TOKEN}`,
             };
 
             // Use octokit.request for GitHub API calls if fetch is not available
