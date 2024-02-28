@@ -58,6 +58,7 @@ jobs:
             .then(response => response.json())
             .then(data => {
                   const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
+                  console.dir({context})
                   return github.rest.issues.createComment({
                     owner: repoOwner,
                     repo: repoName,
