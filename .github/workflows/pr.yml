@@ -33,7 +33,7 @@ jobs:
             const prDiff = diffResponse ? diffResponse.data : 'Diff not available';
 
             // Define your API endpoint here
-            const apiEndpoint = 'YOUR_API_ENDPOINT';
+            const apiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
 
             // Customize this payload as needed
             const payload = {
