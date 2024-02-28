@@ -61,8 +61,6 @@ jobs:
                 const addApiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
                 const generatePrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/generate-pr-eval';
 
-                console.dir({ prReview, prNumber});
-
                 // Customize this payload as needed
                 const payload = {
                   prNumber: prNumber,
@@ -76,9 +74,8 @@ jobs:
                 // Make the API requests
                 const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
                 console.log({ addDataRes });
-                console.log('PR data added to the API');
-                console.log({prDiff})
                 const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
+                console.log({data})
                 const groupedResult = data.result.data.Get.PrData[0]._additional.generate.groupedResult;
                 console.log({ groupedResult });
                 const commentBody = groupedResult;
