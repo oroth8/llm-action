@@ -15,7 +15,7 @@ jobs:
         with:
           script: |
             const githubToken = process.env.GITHUB_TOKEN;
-            const prReview = context.payload;
+            const prReview = context.payload.pull_request;
             const prNumber = context.payload.number;
             const repoFullName = context.payload.repository.full_name;
             const [repoOwner, repoName] = repoFullName.split('/');
