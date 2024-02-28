@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Send PR Review and Diff to API
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/github-script@v7
         with:
           script: |
@@ -20,60 +20,70 @@ jobs:
             const repoFullName = context.payload.repository.full_name;
             const [repoOwner, repoName] = repoFullName.split('/');
 
-            // GitHub API endpoint to get the PR diff
-            const diffUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prNumber}`;
-
-            // Fetch PR diff using Fetch API
-            fetch(diffUrl, {
-              headers: {
-                'Accept': 'application/vnd.github.v3.diff',
-                'Authorization': `Bearer ${githubToken}`,
-              },
-            })
-            .then(response => response.text())
-            .then(prDiff => {
-              const addApiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
-
-              // Customize this payload as needed
-              const payload = {
-                prNumber: prNumber,
-                repoName: repoName,
-                reviewId: prReview.id,
-                reviewState: prReview.state,
-                reviewBody: prReview.body,
-                prDiff: prDiff,
+            // Function to post comment
+            async function postComment(commentBody) {
+              const commentPayload = {
+                owner: repoOwner,
+                repo: repoName,
+                issue_number: prNumber,
+                body: commentBody,
               };
+              await github.rest.issues.createComment(commentPayload);
+            }
 
-              // Make the API request
-              const addDataRes = await fetch(addApiEndpoint, {
-                method: 'POST',
+            // Function to make API request
+            async function makeApiRequest(url, method, body) {
+              const response = await fetch(url, {
+                method: method,
                 headers: {
                   'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${githubToken}`,
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify(body),
               });
-              console.log({addDataRes})
+              return response.json();
+            }
 
-              const generatePrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/generate-pr-eval';
+            // Main function to handle the workflow
+            async function main() {
+              try {
+                // Get PR diff
+                const diffResponse = await github.rest.pulls.get({
+                  owner: repoOwner,
+                  repo: repoName,
+                  pull_number: prNumber,
+                  mediaType: {
+                    format: 'diff',
+                  },
+                });
+                const prDiff = diffResponse.data;
 
-              return fetch(generatePrEndpoint, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({prDiff}),
-              });
-            })
-            .then(response => response.json())
-            .then(data => {
-                  const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
-                  const commentPayload = {
-                    owner: repoOwner,
-                    repo: repoName,
-                    issue_number: prNumber,
-                    body: commentBody,
-                  };
-                  return github.rest.issues.createComment(commentPayload);
-                })
-              .then(response => console.log(`Comment posted: ${response.data.html_url}`))
-              .catch(error => console.error(error));
+                const addApiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
+                const generatePrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/generate-pr-eval';
+
+                // Customize this payload as needed
+                const payload = {
+                  prNumber: prNumber,
+                  repoName: repoName,
+                  reviewId: prReview.id,
+                  reviewState: prReview.state,
+                  reviewBody: prReview.body,
+                  prDiff: prDiff,
+                };
+
+                // Make the API requests
+                const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
+                console.log({ addDataRes });
+
+                const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
+                const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
+                await postComment(commentBody);
+                
+                console.log(`Comment posted`);
+              } catch (error) {
+                console.error(error);
+              }
+            }
+
+            // Execute the main function
+            main();
