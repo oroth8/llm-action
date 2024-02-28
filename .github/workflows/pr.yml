@@ -74,8 +74,10 @@ jobs:
                 // Make the API requests
                 const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
                 console.log({ addDataRes });
-
+                console.log('PR data added to the API');
+                console.log({prDiff})
                 const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
+                console.log({data})
                 const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
                 await postComment(commentBody);
                 
