@@ -14,7 +14,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const axios = require('axios');
+            const fetch = require('node-fetch');
             const githubToken = process.env.GITHUB_TOKEN;
             const prReview = context.payload.review;
             const prNumber = context.payload.pull_request.number;
@@ -24,30 +24,36 @@ jobs:
             // GitHub API endpoint to get the PR diff
             const diffUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prNumber}`;
 
-            // Fetch PR diff
-            const diffResponse = await axios.get(diffUrl, {
+            // Fetch PR diff using Fetch API
+            fetch(diffUrl, {
               headers: {
                 'Accept': 'application/vnd.github.v3.diff',
-                'Authorization': `Bearer ${githubToken}`
-              }
-            }).catch(error => console.error(`Failed to fetch PR diff: ${error.toString()}`));
+                'Authorization': `Bearer ${githubToken}`,
+              },
+            })
+            .then(response => response.text())
+            .then(prDiff => {
+              // Define your API endpoint here
+              const apiEndpoint = 'https://your-api-endpoint.com/path';
 
-            const prDiff = diffResponse ? diffResponse.data : 'Diff not available';
+              // Customize this payload as needed
+              const payload = {
+                prNumber: prNumber,
+                repoName: repoName,
+                reviewId: prReview.id,
+                reviewState: prReview.state,
+                reviewBody: prReview.body,
+                prDiff: prDiff, // Including the PR diff in the payload
+              };
 
-            // Define your API endpoint here
-            const apiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
-
-            // Customize this payload as needed
-            const payload = {
-              prNumber: prNumber,
-              repoName: repoName,
-              reviewId: prReview.id,
-              reviewState: prReview.state,
-              reviewBody: prReview.body,
-              prDiff: prDiff, // Including the PR diff in the payload
-            };
-
-            // Make the API request
-            axios.post(apiEndpoint, payload)
-              .then(response => console.log(`Status: ${response.status}`))
-              .catch(error => console.error(`Error: ${error.toString()}`));
+              // Make the API request
+              return fetch(apiEndpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+              });
+            })
+            .then(response => console.log(`Status: ${response.status}`))
+            .catch(error => console.error(`Error: ${error.toString()}`));
