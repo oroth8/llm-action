@@ -22,6 +22,7 @@ jobs:
 
             // GitHub API endpoint to get the PR diff
             const diffUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prNumber}`;
+            console.log({diffUrl})
 
             // Fetch PR diff using Fetch API
             fetch(diffUrl, {
@@ -32,7 +33,7 @@ jobs:
             })
             .then(response => response.text())
             .then(prDiff => {
-              // Define your API endpoint here
+              console.log(prDiff);
               const apiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
 
               // Customize this payload as needed
