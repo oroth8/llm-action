@@ -1,9 +1,3 @@
-name: PR Review Notification with Diff
-
-on:
-  pull_request_review:
-    types: [submitted, edited, dismissed]
-
 jobs:
   notify-api:
     runs-on: ubuntu-latest
@@ -14,56 +8,51 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const githubToken = process.env.GITHUB_TOKEN;
-            const octokit = github.getOctokit(githubToken);
             const prReview = context.payload.review;
             const prNumber = context.payload.pull_request.number;
             const repoName = context.payload.repository.full_name;
             const [owner, repo] = repoName.split('/');
 
-            // GitHub API endpoint to get the PR diff
+            // Assuming `fetch` is available or use `octokit.request` as an alternative
             const diffUrl = `https://api.github.com/repos/${repoName}/pulls/${prNumber}`;
 
-            // Fetch PR diff
-            fetch(diffUrl, {
-              headers: {
-                'Accept': 'application/vnd.github.v3.diff',
-                'Authorization': `Bearer ${githubToken}`,
-              },
-            })
-            .then(response => response.text())
-            .then(prDiff => {
-              const apiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
-              const payload = {
-                prNumber: prNumber,
-                repoName: repoName,
-                reviewId: prReview.id,
-                reviewState: prReview.state,
-                reviewBody: prReview.body,
-                prDiff: prDiff,
-              };
+            const headers = {
+              'Accept': 'application/vnd.github.v3.diff',
+              'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+            };
 
-              // Make the API request
-              return fetch(apiEndpoint, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-              })
-              .then(response => response.json()) // Assuming the API returns JSON
-              .then(data => {
-                // Construct comment body from API response
-                const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
+            // Use octokit.request for GitHub API calls if fetch is not available
+            octokit.request('GET', diffUrl, { headers: headers })
+              .then(({data}) => {
+                const prDiff = data;
+                const apiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
+                const payload = {
+                  prNumber: prNumber,
+                  repoName: repoName,
+                  reviewId: prReview.id,
+                  reviewState: prReview.state,
+                  reviewBody: prReview.body,
+                  prDiff: prDiff,
+                };
 
-                // Post a comment on the PR
-                return octokit.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: prNumber,
-                  body: commentBody,
+                // Assuming you have a function to handle the API request
+                return fetch(apiEndpoint, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(payload),
+                })
+                .then(response => response.json())
+                .then(data => {
+                  const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
+                  return octokit.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: prNumber,
+                    body: commentBody,
+                  });
                 });
-              });
-            })
-            .then(response => console.log(`Comment posted: ${response.data.html_url}`))
-            .catch(error => console.error(`Error: ${error.toString()}`));
+              })
+              .then(response => console.log(`Comment posted: ${response.data.html_url}`))
+              .catch(error => console.error(`Error: ${error.toString()}`));
