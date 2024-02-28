@@ -17,11 +17,11 @@ jobs:
             const githubToken = process.env.GITHUB_TOKEN;
             const prReview = context.payload.review;
             const prNumber = context.payload.pull_request.number;
-            const repoName = context.payload.repository.full_name;
-            // const repoOwner = context.payload.repository.owner.login;
+            const repoFullName = context.payload.repository.full_name;
+            const [repoOwner, repoName] = repoFullName.split('/');
 
             // GitHub API endpoint to get the PR diff
-            const diffUrl = `https://api.github.com/repos/${repoName}/pulls/${prNumber}`;
+            const diffUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prNumber}`;
             console.log({diffUrl})
 
             // Fetch PR diff using Fetch API
@@ -55,5 +55,20 @@ jobs:
                 body: JSON.stringify(payload),
               });
             })
-            .then(response => console.dir(response))
-            .catch(error => console.error(`Error: ${error.toString()}`));
+            .then(response => response.json())
+            .then(data => {
+                  const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
+                  console.dir({context})
+                  console.dir(context.payload)
+                  console.dir(context.payload.pull_request)
+                  const commentPayload = {
+                    owner: repoOwner,
+                    repo: repoName,
+                    issue_number: prNumber,
+                    body: commentBody,
+                  };
+                  console.log(commentPayload);
+                  return github.rest.issues.createComment(commentPayload);
+                })
+              .then(response => console.log(`Comment posted: ${response.data.html_url}`))
+              .catch(error => console.error(error));
