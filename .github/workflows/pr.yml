@@ -72,7 +72,7 @@ jobs:
                 };
 
                 console.log({payload})
-                console.log({context})
+                console.log({context: context.payload.pull_request})
 
                 // Make the API requests
                 const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
