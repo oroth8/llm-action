@@ -14,7 +14,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const fetch = require('node-fetch'); // This line is not necessary if using Node.js 17.5 or later
             const githubToken = process.env.GITHUB_TOKEN;
             const prReview = context.payload.review;
             const prNumber = context.payload.pull_request.number;
