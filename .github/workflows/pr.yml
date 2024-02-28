@@ -20,7 +20,7 @@ jobs:
             const [repoOwner, repoName] = repoName.split('/');
 
             // GitHub API endpoint to get the PR diff
-            const diffUrl = `https://api.github.com/repos/${repoName}/pulls/${prNumber}`;
+            const diffUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prNumber}`;
             console.log({diffUrl})
 
             // Fetch PR diff using Fetch API
