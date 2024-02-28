@@ -2,7 +2,7 @@ name: PR Review Notification with Diff
 
 on:
   pull_request:
-    types: [ready_for_review, edited]
+    types: [ready_for_review]
 
 jobs:
   notify-api:
@@ -61,13 +61,13 @@ jobs:
                 const addApiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
                 const generatePrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/generate-pr-eval';
 
-                console.dir(context.payload, { depth: 5 })
+                console.dir({ prReview, prNumber});
 
                 // Customize this payload as needed
                 const payload = {
                   prNumber: prNumber,
                   repoName: repoName,
-                  reviewId: prReview.id,
+                  reviewId: prReview,
                   reviewState: prReview.state,
                   reviewBody: prReview.body,
                   prDiff: prDiff,
