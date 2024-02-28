@@ -2,7 +2,7 @@ name: PR Review Notification with Diff
 
 on:
   pull_request:
-    types: [ready_for_review]
+    types: [ready_for_review, edited]
 
 jobs:
   notify-api:
