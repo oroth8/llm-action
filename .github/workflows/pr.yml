@@ -71,10 +71,12 @@ jobs:
                   prDiff: prDiff,
                 };
 
+                console.log({payload})
+
                 // Make the API requests
                 const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
+                console.dir({addDataRes})
                 const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
-                console.log({data});
                 const groupedResult = data.result.data.Get.PrData[0]._additional.generate.groupedResult;
                 const commentBody = groupedResult;
                 await postComment(commentBody);
