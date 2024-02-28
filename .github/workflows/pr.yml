@@ -17,8 +17,7 @@ jobs:
             const githubToken = process.env.GITHUB_TOKEN;
             const prReview = context.payload.review;
             const prNumber = context.payload.pull_request.number;
-            const repoName = context.payload.repository.full_name;
-            const repoOwner = context.payload.repository.owner.login;
+            const [repoOwner, repoName] = repoName.split('/');
 
             // GitHub API endpoint to get the PR diff
             const diffUrl = `https://api.github.com/repos/${repoName}/pulls/${prNumber}`;
