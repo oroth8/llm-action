@@ -22,7 +22,6 @@ jobs:
 
             // GitHub API endpoint to get the PR diff
             const diffUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/pulls/${prNumber}`;
-            console.log({diffUrl})
 
             // Fetch PR diff using Fetch API
             fetch(diffUrl, {
@@ -33,8 +32,7 @@ jobs:
             })
             .then(response => response.text())
             .then(prDiff => {
-              console.log(prDiff);
-              const apiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
+              const addApiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
 
               // Customize this payload as needed
               const payload = {
@@ -47,27 +45,34 @@ jobs:
               };
 
               // Make the API request
-              return fetch(apiEndpoint, {
+              const addDataRes = await fetch(addApiEndpoint, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(payload),
               });
+              console.log({addDataRes})
+
+              const generatePrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/generate-pr-eval';
+
+              return fetch(generatePrEndpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({prDiff}),
+              });
             })
             .then(response => response.json())
             .then(data => {
                   const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
-                  console.dir({context})
-                  console.dir(context.payload)
-                  console.dir(context.payload.pull_request)
                   const commentPayload = {
                     owner: repoOwner,
                     repo: repoName,
                     issue_number: prNumber,
                     body: commentBody,
                   };
-                  console.log(commentPayload);
                   return github.rest.issues.createComment(commentPayload);
                 })
               .then(response => console.log(`Comment posted: ${response.data.html_url}`))
