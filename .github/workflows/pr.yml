@@ -1,8 +1,8 @@
 name: PR Review Notification with Diff
 
 on:
-  pull_request_review:
-    types: [submitted, edited, dismissed]
+  pull_request:
+    types: [ready_for_review]
 
 jobs:
   notify-api:
@@ -15,8 +15,8 @@ jobs:
         with:
           script: |
             const githubToken = process.env.GITHUB_TOKEN;
-            const prReview = context.payload.review;
-            const prNumber = context.payload.pull_request.number;
+            const prReview = context.payload.pull_request;
+            const prNumber = context.payload.number;
             const repoFullName = context.payload.repository.full_name;
             const [repoOwner, repoName] = repoFullName.split('/');
 
@@ -67,18 +67,14 @@ jobs:
                   repoName: repoName,
                   reviewId: prReview.id,
                   reviewState: prReview.state,
-                  reviewBody: prReview.body,
+                  reviewBody: prReview.body || '',
                   prDiff: prDiff,
                 };
 
                 // Make the API requests
                 const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
-                console.log({ addDataRes });
-                console.log('PR data added to the API');
-                console.log({prDiff})
                 const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
                 const groupedResult = data.result.data.Get.PrData[0]._additional.generate.groupedResult;
-                console.log({ groupedResult });
                 const commentBody = groupedResult;
                 await postComment(commentBody);
                 
