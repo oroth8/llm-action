@@ -64,7 +64,6 @@ jobs:
                     issue_number: prNumber,
                     body: commentBody,
                   });
-                });
-              })
+                })
               .then(response => console.log(`Comment posted: ${response.data.html_url}`))
               .catch(error => console.error(`Error: ${error.toString()}`));
