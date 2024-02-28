@@ -61,12 +61,14 @@ jobs:
                   console.dir({context})
                   console.dir(context.payload)
                   console.dir(context.payload.pull_request)
-                  return github.rest.issues.createComment({
+                  const commentPayload = {
                     owner: repoOwner,
                     repo: repoName,
                     issue_number: prNumber,
                     body: commentBody,
-                  });
+                  };
+                  console.log(commentPayload);
+                  return github.rest.issues.createComment(commentPayload);
                 })
               .then(response => console.log(`Comment posted: ${response.data.html_url}`))
-              .catch(error => console.error(`Error: ${error.toString()}`));
+              .catch(error => console.error(error));
