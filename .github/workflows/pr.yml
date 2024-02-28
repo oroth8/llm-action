@@ -8,23 +8,23 @@ jobs:
   notify-api:
     runs-on: ubuntu-latest
     steps:
-      - name: Send PR Review and Diff to API
+      - name: Send PR Review and Diff to API and Comment on PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/github-script@v7
         with:
           script: |
             const githubToken = process.env.GITHUB_TOKEN;
+            const octokit = github.getOctokit(githubToken);
             const prReview = context.payload.review;
             const prNumber = context.payload.pull_request.number;
             const repoName = context.payload.repository.full_name;
-            // const repoOwner = context.payload.repository.owner.login;
+            const [owner, repo] = repoName.split('/');
 
             // GitHub API endpoint to get the PR diff
             const diffUrl = `https://api.github.com/repos/${repoName}/pulls/${prNumber}`;
-            console.log({diffUrl})
 
-            // Fetch PR diff using Fetch API
+            // Fetch PR diff
             fetch(diffUrl, {
               headers: {
                 'Accept': 'application/vnd.github.v3.diff',
@@ -33,10 +33,7 @@ jobs:
             })
             .then(response => response.text())
             .then(prDiff => {
-              console.log(prDiff);
               const apiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
-
-              // Customize this payload as needed
               const payload = {
                 prNumber: prNumber,
                 repoName: repoName,
@@ -53,7 +50,20 @@ jobs:
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(payload),
+              })
+              .then(response => response.json()) // Assuming the API returns JSON
+              .then(data => {
+                // Construct comment body from API response
+                const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
+
+                // Post a comment on the PR
+                return octokit.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: commentBody,
+                });
               });
             })
-            .then(response => console.dir(response))
+            .then(response => console.log(`Comment posted: ${response.data.html_url}`))
             .catch(error => console.error(`Error: ${error.toString()}`));
