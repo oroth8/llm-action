@@ -8,7 +8,12 @@ jobs:
   notify-api:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/labeler@v4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Send PR Review and Diff to API
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         uses: actions/github-script@v6
         with:
           script: |
@@ -49,5 +54,3 @@ jobs:
             axios.post(apiEndpoint, payload)
               .then(response => console.log(`Status: ${response.status}`))
               .catch(error => console.error(`Error: ${error.toString()}`));
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
