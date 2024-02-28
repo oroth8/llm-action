@@ -77,8 +77,9 @@ jobs:
                 console.log('PR data added to the API');
                 console.log({prDiff})
                 const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
-                console.log({data})
-                const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
+                const groupedResult = data.result.data.Get.PrData[0]._additional.generate.groupedResult;
+                console.log({ groupedResult });
+                const commentBody = `API Response: ${JSON.stringify(groupedResult, null, 2)}`;
                 await postComment(commentBody);
                 
                 console.log(`Comment posted`);
