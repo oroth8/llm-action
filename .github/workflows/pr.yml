@@ -55,5 +55,5 @@ jobs:
                 body: JSON.stringify(payload),
               });
             })
-            .then(response => console.log(`Status: ${response}`))
+            .then(response => console.log(`Status: ${response.text()}`))
             .catch(error => console.error(`Error: ${error.toString()}`));
