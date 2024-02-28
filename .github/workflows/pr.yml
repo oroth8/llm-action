@@ -22,9 +22,11 @@ jobs:
             // Assuming `fetch` is available or use `octokit.request` as an alternative
             const diffUrl = `https://api.github.com/repos/${repoName}/pulls/${prNumber}`;
 
+            console.log({diffUrl})
+
             const headers = {
               'Accept': 'application/vnd.github.v3.diff',
-              'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+              'Authorization': `Bearer ${githubToken}`,
             };
 
             // Use octokit.request for GitHub API calls if fetch is not available
