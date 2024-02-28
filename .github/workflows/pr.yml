@@ -18,7 +18,7 @@ jobs:
             const prReview = context.payload.review;
             const prNumber = context.payload.pull_request.number;
             const repoName = context.payload.repository.full_name;
-            // const repoOwner = context.payload.repository.owner.login;
+            const repoOwner = context.payload.repository.owner.login;
 
             // GitHub API endpoint to get the PR diff
             const diffUrl = `https://api.github.com/repos/${repoName}/pulls/${prNumber}`;
@@ -59,8 +59,8 @@ jobs:
             .then(data => {
                   const commentBody = `API Response: ${JSON.stringify(data, null, 2)}`;
                   return github.rest.issues.createComment({
-                    owner,
-                    repo,
+                    owner: repoOwner,
+                    repo: repoName,
                     issue_number: prNumber,
                     body: commentBody,
                   });
