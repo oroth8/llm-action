@@ -74,9 +74,6 @@ jobs:
                 // Make the API requests
                 const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
                 const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
-                console.log("hey")
-                console.log(data.result)
-                console.log({data})
                 const groupedResult = data.result.data.Get.PrData[0]._additional.generate.groupedResult;
                 const commentBody = groupedResult;
                 await postComment(commentBody);
