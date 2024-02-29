@@ -56,7 +56,7 @@ jobs:
                     format: 'diff',
                   },
                 });
-                const prDiff = diffResponse.data;
+                const prDiff = `${diffResponse.data}`;
 
                 const addApiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
                 const generatePrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/generate-pr-eval';
