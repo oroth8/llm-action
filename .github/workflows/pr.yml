@@ -56,10 +56,11 @@ jobs:
                     format: 'diff',
                   },
                 });
-                const prDiff = diffResponse.data;
+                const prDiff = `${diffResponse.data}`;
 
                 const addApiEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/add-pr-data';
                 const generatePrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/generate-pr-eval';
+                const createPrEndpoint = 'https://code-digester-006167766c6e.herokuapp.com/llm/create-pr';
 
                 // Customize this payload as needed
                 const payload = {
@@ -73,10 +74,18 @@ jobs:
 
                 // Make the API requests
                 const addDataRes = await makeApiRequest(addApiEndpoint, 'POST', payload);
+
                 const data = await makeApiRequest(generatePrEndpoint, 'POST', { prDiff });
                 const groupedResult = data.result.data.Get.PrData[0]._additional.generate.groupedResult;
                 const commentBody = groupedResult;
                 await postComment(commentBody);
+                console.log(`VDB Comment posted`);
+
+                const {result} = await makeApiRequest(createPrEndpoint, 'POST', {prDiff});
+                console.log(result)
+                console.log(result.choices)
+                const createdPrBody = result.choices[0].message.content
+                await postComment(createdPrBody);
                 
                 console.log(`Comment posted`);
               } catch (error) {
