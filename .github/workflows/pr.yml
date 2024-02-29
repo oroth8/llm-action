@@ -81,9 +81,10 @@ jobs:
                 await postComment(commentBody);
                 console.log(`VDB Comment posted`);
 
-                const createPrRes = await makeApiRequest(createPrEndpoint, 'POST', {prDiff});
-                console.log({createPrRes})
-                const createdPrBody = data.result.choices[0].message.content
+                const {result} = await makeApiRequest(createPrEndpoint, 'POST', {prDiff});
+                console.log(result)
+                console.log(result.choices)
+                const createdPrBody = result.choices[0].message.content
                 await postComment(createdPrBody);
                 
                 console.log(`Comment posted`);
